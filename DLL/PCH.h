@@ -1,0 +1,19 @@
+#pragma once
+
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <Windows.h>
+#include <string>
+#include <fstream>
+#include <thread>
+#include <memory>
+#include <bit>
+#include <span>
+#include <initializer_list>
+#include <queue>
+#include <mutex>
+#include <list>
+#include <array>
+#include <format>
+#include <algorithm>
+#include <chrono>
