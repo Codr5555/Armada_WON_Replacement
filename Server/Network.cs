@@ -206,7 +206,8 @@ namespace ArmadaServer {
 
 				//Invalid message.
 				if (messageID != 255 && messageID > TCPHandlers.Length) {
-					Log.Warning($"Invalid message ID received from {Player.Account} ({Player.IPAddress}).  Closing the connection.");
+					var playerName = (Player?.Account ?? "") + " ";
+					Log.Warning($"Invalid message ID received from {playerName} ({new IPAddress(TCPSocket.RemoteEndPoint!.GetIPv4Address())}).  Closing the connection.");
 					Close();
 					return;
 				}
