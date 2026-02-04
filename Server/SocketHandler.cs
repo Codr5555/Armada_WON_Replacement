@@ -229,6 +229,10 @@ namespace ArmadaServer {
 		}
 
 		private static (IPAddress IPAddress,ushort Port) ValidateArgument(string argument) {
+			if (argument.Length == 0) {
+				throw new ArgumentException("An IP address and port argument is required.");
+			}
+
 			var parts = argument.Split(':');
 			if (parts.Length != 2) {
 				throw new ArgumentException("Invalid IP address and port argument.");
