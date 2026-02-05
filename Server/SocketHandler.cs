@@ -150,7 +150,13 @@ namespace ArmadaServer {
 		private async void CommunicationCompleted(object? sender,SocketAsyncEventArgs arguments) {
 			switch (arguments.LastOperation) {
 				case SocketAsyncOperation.Receive:
-					await ProcessReceiveCompletion(arguments);
+					try {
+						await ProcessReceiveCompletion(arguments);
+					}
+					catch (Exception exception) {
+						Log.Error(exception,$"An error occurred when processing a receive event.  The connection is being closed.");
+						CloseConnection(arguments);
+					}
 					break;
 				default:
 					Log.Warning($"Unexpected last operation ({arguments.LastOperation}) on a socket.  It's being closed.");
