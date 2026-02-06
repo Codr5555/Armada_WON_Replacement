@@ -65,7 +65,7 @@ namespace ArmadaServer {
 						network.ProcessUDPMessage(socketData,data);
 					}
 					catch (Exception exception) {
-						Log.Error(exception,$"An exception occurred in the UDP message processor.  It's being ignored.  Player({network.Player.Account} - {new IPAddress(address)})  Data({OutputHelper.GetByteString(data)})");
+						Log.Error(exception,$"An exception occurred in the UDP message processor.  It's being ignored.  (Player: {network.Player?.Account ?? "(Not yet authenticated.)"} - {new IPAddress(address)})  (Data: {OutputHelper.GetByteString(data)})");
 					}
 				}
 
@@ -76,7 +76,7 @@ namespace ArmadaServer {
 					}
 				}
 				catch (Exception exception) {
-					Log.Error(exception,$"The UDP ReceiveFrom call for player \"{network?.Player.Account}\" ({address}) threw an exception.  It's being ignored.");
+					Log.Error(exception,$"A UDP ReceiveFrom call threw an exception.  It's being ignored.  (Player: {network?.Player?.Account ?? "(Not yet authenticated.)"} - {new IPAddress(address)})");
 
 					continue;
 				}
@@ -141,7 +141,7 @@ namespace ArmadaServer {
 			catch (Exception exception) {
 				var network = communicationArguments.UserToken as Network;
 				CloseConnection(communicationArguments);
-				Log.Error(exception,$"An error occurred during communication and the connection was terminated.  Account: {network?.Player?.Account ?? "(Login hadn't yet occurred.)"}");
+				Log.Error(exception,$"An error occurred during communication and the connection was terminated.  Account: {network?.Player?.Account ?? "(Not yet authenticated.)"}");
 			}
 
 			return Task.CompletedTask;
@@ -189,7 +189,7 @@ namespace ArmadaServer {
 		internal void CloseConnection(SocketAsyncEventArgs arguments) {
 			var network = arguments.UserToken! as Network;
 
-			Log.Information($"Client disconnected: {network?.Player?.Account ?? "Unknown (Login hadn't yet occurred.)"}");
+			Log.Information($"Client disconnected: {network?.Player?.Account ?? "(Not yet authenticated.)"} - {new IPAddress(arguments.RemoteEndPoint!.GetIPv4Address())}");
 
 			if (network != null) {
 				try {

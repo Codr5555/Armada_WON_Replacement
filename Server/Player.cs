@@ -5,7 +5,7 @@ namespace ArmadaServer {
 		internal Network Network { get; }
 		internal uint IPAddress { get; }
 		internal DateTime LastMessage { get; set; }
-		internal string Account { get; set; } = "";
+		internal string Account { get; set; } = "(Not yet logged in.)";
 		internal Game? Game { get; set; } = null;
 
 		private Room room = null!;
