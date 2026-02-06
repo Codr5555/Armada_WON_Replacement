@@ -183,10 +183,10 @@ namespace ArmadaServer {
 		}
 
 		internal void Close() {
-			Console.WriteLine($"Closing the connection for player: {Player.Account}.");
+			Console.WriteLine($"Closing the connection for player: {Player?.Account ?? "(Not yet authenticated.)"}.");
 
 			terminateToken.Cancel();
-			Player.Disconnect();
+			Player?.Disconnect();
 			TCPSocket.Close();
 		}
 
@@ -206,8 +206,7 @@ namespace ArmadaServer {
 
 				//Invalid message.
 				if (messageID != 255 && messageID > TCPHandlers.Length) {
-					var playerName = (Player?.Account ?? "") + " ";
-					Log.Warning($"Invalid message ID received from {playerName} ({new IPAddress(TCPSocket.RemoteEndPoint!.GetIPv4Address())}).  Closing the connection.");
+					Log.Warning($"Invalid message ID received.  Closing the connection.  (Player: {Player?.Account ?? "(Not yet authenticated.)"} - {new IPAddress(TCPSocket.RemoteEndPoint!.GetIPv4Address())})");
 					Close();
 					return;
 				}
@@ -217,7 +216,7 @@ namespace ArmadaServer {
 						return;
 					}
 
-					Console.WriteLine($"Connect request from {TCPSocket.RemoteEndPoint!.GetIPv4Address()}.");
+					Console.WriteLine($"Connect message from {new IPAddress(TCPSocket.RemoteEndPoint!.GetIPv4Address())}.");
 
 					data = new Span<byte>(SocketBufferPool.SourceBuffer,CurrentBufferOffset,RemainingReadLength);
 					Connect(data.Slice(1,64));
@@ -269,7 +268,7 @@ namespace ArmadaServer {
 				return;
 			}
 
-			Console.WriteLine($"Executing UDP handler: {UDPHandlers[messageID].Method.Name} - Player: {Player.Account}");
+			Console.WriteLine($"Executing UDP handler: {UDPHandlers[messageID].Method.Name} (Player: {Player?.Account ?? "(Not yet authenticated.)"} - {new IPAddress(socketData.RemoteEndPoint!.GetIPv4Address())})");
 			UDPHandlers[messageID](socketData,data[1..]);
 		}
 
