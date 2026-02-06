@@ -166,7 +166,7 @@ namespace ArmadaServer {
 
 		internal Task ProcessReceiveCompletion(SocketAsyncEventArgs arguments) {
 			if (arguments.BytesTransferred == 0 || arguments.SocketError != SocketError.Success) {
-				if (arguments.SocketError != SocketError.Success) {
+				if (arguments.SocketError != SocketError.Success && arguments.SocketError != SocketError.ConnectionReset) {
 					Log.Warning($"A socket read event resulted in a non-successful status: {arguments.SocketError}");
 				}
 				CloseConnection(arguments);
@@ -181,7 +181,7 @@ namespace ArmadaServer {
 		internal void CloseConnection(SocketAsyncEventArgs arguments) {
 			var network = arguments.UserToken! as Network;
 
-			Log.Information($"Client disconnected: {network?.Player?.Account ?? "(Not yet authenticated.)"} - {new IPAddress(arguments.RemoteEndPoint!.GetIPv4Address())}");
+			Log.Information($"Client disconnected: {network?.Player?.Account ?? "(Not yet authenticated.)"} - {new IPAddress(network.TCPSocket.RemoteEndPoint!.GetIPv4Address())}");
 
 			if (network != null) {
 				try {
