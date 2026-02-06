@@ -48,6 +48,12 @@ namespace ArmadaServer {
 			_ = Task.Run(ConnectionMonitor);
 		}
 
+		internal Task StartAsync() {
+			var asyncArguments = new SocketAsyncEventArgs();
+			asyncArguments.Completed += ListenSocket_Completed;
+			return ProcessIncomingConnections(asyncArguments);
+		}
+
 		private void UDPReceive(object? sender,SocketAsyncEventArgs socketData) {
 			while (true) {
 				Network? network = null;
@@ -83,12 +89,6 @@ namespace ArmadaServer {
 			}
 		}
 
-		internal Task StartAsync() {
-			var asyncArguments = new SocketAsyncEventArgs();
-			asyncArguments.Completed += ListenSocket_Completed;
-			return ProcessIncomingConnections(asyncArguments);
-		}
-
 		private async Task ProcessIncomingConnections(SocketAsyncEventArgs arguments) {
 			while (true) {
 				await connectionLimiter.WaitAsync();
@@ -118,10 +118,10 @@ namespace ArmadaServer {
 			await ProcessIncomingConnections(arguments);
 		}
 
-		private Task StartCommunication(SocketAsyncEventArgs arguments) {
+		private async Task StartCommunication(SocketAsyncEventArgs arguments) {
 			if (!argumentsPool.TryPop(out var communicationArguments)) {
 				Log.Error("Unable to retrieve async arguments for starting communication.  This shouldn't be possible and indicates that there's a desynchronization between the connection-limiting semaphore and arguments pool.");
-				return Task.CompletedTask;
+				return;
 			}
 
 			try {
@@ -130,12 +130,12 @@ namespace ArmadaServer {
 			catch (Exception exception) {
 				argumentsPool.Push(communicationArguments);
 				Log.Error(exception,"Failed to create a Network instance for the new connection.");
-				return Task.CompletedTask;
+				return;
 			}
 
 			try {
 				if (!arguments.AcceptSocket!.ReceiveAsync(communicationArguments)) {
-					return ProcessReceiveCompletion(communicationArguments);
+					await ProcessReceiveCompletion(communicationArguments);
 				}
 			}
 			catch (Exception exception) {
@@ -143,8 +143,6 @@ namespace ArmadaServer {
 				CloseConnection(communicationArguments);
 				Log.Error(exception,$"An error occurred during communication and the connection was terminated.  Account: {network?.Player?.Account ?? "(Not yet authenticated.)"}");
 			}
-
-			return Task.CompletedTask;
 		}
 
 		private async void CommunicationCompleted(object? sender,SocketAsyncEventArgs arguments) {
@@ -154,8 +152,9 @@ namespace ArmadaServer {
 						await ProcessReceiveCompletion(arguments);
 					}
 					catch (Exception exception) {
-						Log.Error(exception,$"An error occurred when processing a receive event.  The connection is being closed.");
+						var network = arguments.UserToken as Network;
 						CloseConnection(arguments);
+						Log.Error(exception,$"An error occurred during communication and the connection was terminated.  Account: {network?.Player?.Account ?? "(Not yet authenticated.)"}");
 					}
 					break;
 				default:
@@ -176,14 +175,7 @@ namespace ArmadaServer {
 
 			var network = (Network)arguments.UserToken!;
 			network.RemainingReadLength += arguments.BytesTransferred;
-			try {
-				return network.ProcessTCPMessages(arguments);
-			}
-			catch (Exception exception) {
-				Log.Error(exception,"Message processing failed.  The connection is being closed.");
-				CloseConnection(arguments);
-			}
-			return Task.CompletedTask;
+			return network.ProcessTCPMessages(arguments);
 		}
 
 		internal void CloseConnection(SocketAsyncEventArgs arguments) {
