@@ -19,9 +19,9 @@ namespace ArmadaServer {
 				Player.Room.SendRemovePlayerMessages(Player);
 			}
 
-			Console.WriteLine($"DataTargetted - From: {Player.Account}\n  ({data.Length - 4} bytes) Target({new IPAddress(targetIPAddress)}): {OutputHelper.GetByteString(data.Slice(4))}");
+			Log.Information($"  ({data.Length - 4} bytes) Target({new IPAddress(targetIPAddress)}): {OutputHelper.GetByteString(data.Slice(4))}");
 
-			//The data already inclues an IP address at the beginning, so adding length isn't needed.
+			//The data already includes an IP address at the beginning, so adding length isn't needed.
 			var buffer = new byte[data.Length];
 
 			BitConverter.GetBytes(Player.IPAddress).CopyTo(buffer,0);
