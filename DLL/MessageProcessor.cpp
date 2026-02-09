@@ -47,34 +47,35 @@ void MessageProcessor::ExecuteTCP() {
 }
 
 void MessageProcessor::ExecuteUDP() {
-	constexpr int bufferLength = 1024;
-	auto buffer = std::make_unique<char[]>(bufferLength);
-	auto bufferSpan = std::span<char>(buffer.get(),bufferLength);
+	constexpr int bufferLength = 768;
+	std::array<char,bufferLength> buffer;
 	SOCKET &socket = interfaceData->communicator.UDPSocket;
 
 	while (socket && !interfaceData->shutdown) {
 		if (!WaitForData(socket)) {
-			continue;
+			Logger::Log("WaitForData returned false.  Exiting the UDP loop.");
+			break;
 		}
 
-		int recvResult = recvfrom(socket,buffer.get(),bufferLength,0,nullptr,nullptr);
+		int recvResult = recvfrom(socket,buffer.data(),bufferLength,0,nullptr,nullptr);
 		if (HandleInvalidResult(socket,recvResult,true)) {
+			Logger::Log("Invalid result from a UDP recvfrom.  Exiting the UDP loop.");
 			break;
 		}
 
 		Logger::Log(std::format("Received a UDP message.  Length: {}",recvResult).c_str());
 
-		if (*std::bit_cast<int*>(buffer.get()) == 1) {
+		if (*std::bit_cast<int*>(buffer.data()) == 1) {
 			interfaceData->events.push(new Network::Won::Event(Network::Won::Event::Code::Connect));
 			continue;
 		}
 
-		//UDP is only used for Data messages except for the connection confirmation.
+		//UDP is only used for Data messages except for the connection confirmation above.
 		try {
-			Data(buffer.get(),recvResult);
+			Data(buffer.data(),recvResult);
 		}
 		catch (std::exception exception) {
-			Logger::Log(std::format("An exception occurred while processing the Data handler (UDP): {}",exception.what()).c_str());
+			Logger::Log(std::format("An exception occurred while processing the UDP Data handler: {}",exception.what()).c_str());
 			continue;
 		}
 	}

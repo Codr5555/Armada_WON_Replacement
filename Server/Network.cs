@@ -247,7 +247,7 @@ namespace ArmadaServer {
 
 				data = new Span<byte>(SocketBufferPool.SourceBuffer,CurrentBufferOffset + 5,messageLength);
 
-				Console.WriteLine($"Executing TCP handler: {TCPHandlers[messageID - 1].Method.Name} - Player: {Player.Account}");
+				Log.Information($"Executing TCP handler: {TCPHandlers[messageID - 1].Method.Name} - Player: {Player.Account}");
 				try {
 					TCPHandlers[messageID - 1](data);
 				}
@@ -268,7 +268,7 @@ namespace ArmadaServer {
 				return;
 			}
 
-			Console.WriteLine($"Executing UDP handler: {UDPHandlers[messageID].Method.Name} (Player: {Player?.Account ?? "(Not yet authenticated.)"} - {new IPAddress(socketData.RemoteEndPoint!.GetIPv4Address())})");
+			Log.Information($"Executing UDP handler: {UDPHandlers[messageID].Method.Name} (Player: {Player?.Account ?? "(Not yet authenticated.)"} - {new IPAddress(socketData.RemoteEndPoint!.GetIPv4Address())})");
 			UDPHandlers[messageID](socketData,data[1..]);
 		}
 
@@ -371,7 +371,7 @@ namespace ArmadaServer {
 
 				SocketAsyncEventArgs? arguments = null;
 				try {
-					Console.WriteLine($"Sending UDP message (Data, {data.Length} bytes) to {Player.Account} ({new IPAddress(Player.IPAddress)}): {OutputHelper.GetByteString(data)}");
+					Log.Information($"Sending UDP message (Data, {data.Length} bytes) to {Player.Account} ({new IPAddress(Player.IPAddress)}): {OutputHelper.GetByteString(data)}");
 
 					if (!argumentsPool.TryPop(out arguments)) {
 						arguments = new SocketAsyncEventArgs();
@@ -388,7 +388,7 @@ namespace ArmadaServer {
 						argumentsPool.Push(arguments);
 					}
 					Log.Error(exception,"A UDP socket error occurred.  A delay is being imposed before the next send attempt.");
-					await Task.Delay(2500);
+					await Task.Delay(1000);
 				}
 			}
 		}

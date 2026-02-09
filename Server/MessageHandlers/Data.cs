@@ -1,12 +1,13 @@
 ﻿using System.Net.Sockets;
+using Serilog;
 
 namespace ArmadaServer {
 	internal partial class Network {
 		internal void Data(Span<byte> data) {
-			Console.WriteLine($"  ({data.Length} bytes): {OutputHelper.GetByteString(data)}");
+			Log.Information($"  ({data.Length} bytes): {OutputHelper.GetByteString(data)}");
 
 			if (Player.Game == null) {
-				throw new Exception("Data called without state indicating who to send it to.");
+				throw new Exception("Data was called without a game assigned to the player.");
 			}
 
 			if (!Server.Players.ContainsKey(Player.Game.Host.IPAddress)) {

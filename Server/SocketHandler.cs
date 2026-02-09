@@ -181,7 +181,7 @@ namespace ArmadaServer {
 		internal void CloseConnection(SocketAsyncEventArgs arguments) {
 			var network = arguments.UserToken! as Network;
 
-			Log.Information($"Client disconnected: {network?.Player?.Account ?? "(Not yet authenticated.)"} - {new IPAddress(network.TCPSocket.RemoteEndPoint!.GetIPv4Address())}");
+			Log.Information($"Client disconnected: {network?.Player?.Account ?? "(Not yet authenticated.)"} - {GetIPAddress(arguments)}");
 
 			if (network != null) {
 				try {
@@ -243,6 +243,26 @@ namespace ArmadaServer {
 				throw new ArgumentException("The port is invalid.");
 			}
 			return (address,port);
+		}
+
+		private static string GetIPAddress(SocketAsyncEventArgs arguments) {
+			var network = arguments.UserToken as Network;
+			var IPAddress = network!.TCPSocket.RemoteEndPoint?.GetIPv4Address();
+			string logAddress = "";
+			if (IPAddress == null) {
+				IPAddress = network!.UDPSocket.RemoteEndPoint?.GetIPv4Address();
+				if (IPAddress == null) {
+					IPAddress = arguments.RemoteEndPoint?.GetIPv4Address();
+					if (IPAddress == null) {
+						logAddress = "(IP address is not available.)";
+					}
+				}
+			}
+			if (IPAddress != null) {
+				logAddress = new IPAddress(IPAddress.Value).ToString();
+			}
+
+			return logAddress;
 		}
 	}
 }
