@@ -247,10 +247,17 @@ namespace ArmadaServer {
 
 		private static string GetIPAddress(SocketAsyncEventArgs arguments) {
 			var network = arguments.UserToken as Network;
-			var IPAddress = network!.TCPSocket.RemoteEndPoint?.GetIPv4Address();
+
+			uint? IPAddress = null;
+			try {
+				IPAddress = network!.TCPSocket.RemoteEndPoint?.GetIPv4Address();
+			}
+			catch {
+			}
+
 			string logAddress = "";
 			if (IPAddress == null) {
-				IPAddress = network!.UDPSocket.RemoteEndPoint?.GetIPv4Address();
+				IPAddress = network!.UDPEndoint?.GetIPv4Address();
 				if (IPAddress == null) {
 					IPAddress = arguments.RemoteEndPoint?.GetIPv4Address();
 					if (IPAddress == null) {
