@@ -73,7 +73,6 @@ public:
 	~ServerCommunicator();
 
 	void Connect();
-	void ConnectUDP() const;
 	void Login(const char *accountName,const char *password) const;
 	void GetGameList() const;
 	void JoinRoom(const char *name,const char *password) const;
@@ -95,6 +94,7 @@ public:
 	void TCPSend(TCPMessageID ID) const;
 	void TCPSend(TCPMessageID ID,std::span<const char> buffer) const;
 
+	void EnableUDP();
 	void UDPSend(UDPMessageID ID) const;
 	void UDPSend(UDPMessageID ID,std::span<const char> buffer) const;
 };
