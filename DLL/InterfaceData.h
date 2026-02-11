@@ -32,6 +32,7 @@ public:
 	unsigned long long lastGameListUpdate = 0;
 	unsigned long long lastRoomListUpdate = 0;
 	const char *MOTD = nullptr;
+	bool useUDP;
 
 	InterfaceData(int CRC,const std::list<const char *> &serverList);
 	~InterfaceData() {
@@ -70,6 +71,10 @@ public:
 	}
 	bool CanCancel() const {
 		return GetTickCount64() - actionTime >= 5000;
+	}
+
+	void SuccessfulConnection() {
+		events.push(new Network::Won::Event(Network::Won::Event::Code::Connect));
 	}
 };
 

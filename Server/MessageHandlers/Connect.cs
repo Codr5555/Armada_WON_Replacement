@@ -13,7 +13,7 @@
 			Server.Players[Player.IPAddress] = Player;
 
 			QueuePingRequest();
-			QueueMessage(OutgoingTCPMessageID.Connect,BitConverter.GetBytes(Player.IPAddress));
+			QueueMessage(OutgoingTCPMessageID.Connect,BitConverter.GetBytes(Player.IPAddress),BitConverter.GetBytes(Server.useUDP));
 		}
 	}
 }

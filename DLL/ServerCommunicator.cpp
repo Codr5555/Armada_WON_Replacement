@@ -23,13 +23,9 @@ ServerCommunicator::ServerCommunicator(Network::Won::InterfaceData *interfaceDat
 	WSAStartup(0x0202,&data);
 
 	TCPSocket = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
-	UDPSocket = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
 
 	if (!TCPMessageProcessor.joinable()) {
 		TCPMessageProcessor = std::thread(MessageProcessor::TCPThread,interfaceData);
-	}
-	if (!UDPMessageProcessor.joinable()) {
-		UDPMessageProcessor = std::thread(MessageProcessor::UDPThread,interfaceData);
 	}
 
 	int timeout = socketTimeout;
@@ -43,7 +39,10 @@ ServerCommunicator::ServerCommunicator(Network::Won::InterfaceData *interfaceDat
 ServerCommunicator::~ServerCommunicator() {
 	WSACleanup();
 	TCPMessageProcessor.join();
-	UDPMessageProcessor.join();
+
+	if (interfaceData->useUDP) {
+		UDPMessageProcessor.join();
+	}
 }
 
 void ServerCommunicator::Connect() {
@@ -66,10 +65,6 @@ void ServerCommunicator::Connect() {
 	*buffer = (char)TCPMessageID::Connect;
 	memcpy_s(buffer + 1,64,token,64);
 	send(TCPSocket,buffer,65,0);
-}
-
-void ServerCommunicator::ConnectUDP() const {
-	UDPSend(UDPMessageID::Connect);
 }
 
 void ServerCommunicator::Login(const char *accountName,const char *password) const {
@@ -131,7 +126,7 @@ void ServerCommunicator::JoinGame(const char *IPAddress,const char *password) co
 
 void ServerCommunicator::Data(const void *data,int length) const {
 	auto span = std::span<const char>(std::bit_cast<const char*>(data),length);
-	if (interfaceData->gameState == Network::Won::InterfaceData::GameState::InGame) {
+	if (interfaceData->useUDP && interfaceData->gameState == Network::Won::InterfaceData::GameState::InGame) {
 		UDPSend(UDPMessageID::Data,span);
 	}
 	else {
@@ -146,7 +141,7 @@ void ServerCommunicator::DataTargetted(int targetIPAddress,const void *data,int 
 	memcpy_s(buffer.get() + 4,length,data,length);
 
 	auto span = std::span<const char>(buffer.get(),4 + length);
-	if (interfaceData->gameState == Network::Won::InterfaceData::GameState::InGame) {
+	if (interfaceData->useUDP && interfaceData->gameState == Network::Won::InterfaceData::GameState::InGame) {
 		UDPSend(UDPMessageID::DataTargetted,span);
 	}
 	else {
@@ -254,6 +249,14 @@ void ServerCommunicator::TCPSend(TCPMessageID ID,std::span<const char> data) con
 	if (result < 0) {
 		throw std::exception(std::format("A TCP send error ({}) occurred on the socket.",WSAGetLastError()).c_str());
 	}
+}
+
+void ServerCommunicator::EnableUDP() {
+	UDPSocket = socket(AF_INET,SOCK_DGRAM,IPPROTO_UDP);
+	if (!UDPMessageProcessor.joinable()) {
+		UDPMessageProcessor = std::thread(MessageProcessor::UDPThread,interfaceData);
+	}
+	UDPSend(UDPMessageID::Connect);
 }
 
 void ServerCommunicator::UDPSend(UDPMessageID ID) const {

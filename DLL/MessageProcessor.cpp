@@ -66,7 +66,7 @@ void MessageProcessor::ExecuteUDP() {
 		Logger::Log(std::format("Received a UDP message.  Length: {}",recvResult).c_str());
 
 		if (*std::bit_cast<int*>(buffer.data()) == 1) {
-			interfaceData->events.push(new Network::Won::Event(Network::Won::Event::Code::Connect));
+			interfaceData->SuccessfulConnection();
 			continue;
 		}
 

@@ -26,7 +26,7 @@ namespace ArmadaServer {
 				}
 
 				Console.WriteLine($"  Sending to {gamePlayer.Account}.");
-				if (Player.Game.InProgress) {
+				if (Server.useUDP && Player.Game.InProgress) {
 					gamePlayer.Network.OutgoingUDPMessages.Add(buffer);
 				}
 				else {

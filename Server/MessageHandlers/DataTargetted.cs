@@ -27,7 +27,7 @@ namespace ArmadaServer {
 			BitConverter.GetBytes(Player.IPAddress).CopyTo(buffer,0);
 			data[4..].CopyTo(new Span<byte>(buffer,4,data.Length - 4));
 
-			if (Player.Game != null && Player.Game.InProgress) {
+			if (Server.useUDP && Player.Game != null && Player.Game.InProgress) {
 				targetPlayer.Network.OutgoingUDPMessages.Add(buffer);
 			}
 			else {

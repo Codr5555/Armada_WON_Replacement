@@ -89,7 +89,10 @@ namespace ArmadaServer {
 			];
 
 			_ = Task.Run(OutgoingTCPMessageProcessor);
-			_ = Task.Run(OutgoingUDPMessageProcessor);
+
+			if (Server.useUDP) {
+				_ = Task.Run(OutgoingUDPMessageProcessor);
+			}
 		}
 
 		internal static byte[] CreateSendBufferHeader(OutgoingTCPMessageID messageID,int dataLength) {
@@ -165,7 +168,13 @@ namespace ArmadaServer {
 			var buffer = new byte[4 + data.Length];
 			BitConverter.GetBytes(sourceIPAddress).CopyTo(buffer);
 			data.CopyTo(new Span<byte>(buffer,4,data.Length));
-			OutgoingUDPMessages.Add(buffer);
+
+			if (Server.useUDP) {
+				OutgoingUDPMessages.Add(buffer);
+				return;
+			}
+
+			QueueMessage(OutgoingTCPMessageID.Data,buffer);
 		}
 
 		internal void QueuePingRequest() {
@@ -375,7 +384,7 @@ namespace ArmadaServer {
 
 					if (!argumentsPool.TryPop(out arguments)) {
 						arguments = new SocketAsyncEventArgs();
-						arguments.Completed += UDPSendCompleted;
+						arguments.Completed += (object? _,SocketAsyncEventArgs e) => argumentsPool.Push(e);
 						arguments.RemoteEndPoint = UDPEndoint;
 					}
 					arguments.SetBuffer(data,0,data.Length);
@@ -391,10 +400,6 @@ namespace ArmadaServer {
 					await Task.Delay(1000);
 				}
 			}
-		}
-
-		private void UDPSendCompleted(object? sender,SocketAsyncEventArgs e) {
-			argumentsPool.Push(e);
 		}
 	}
 }
