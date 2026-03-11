@@ -178,6 +178,13 @@ void MessageProcessor::ProcessUpdatedPlayerData(const char *data) {
 	}
 }
 
+void MessageProcessor::SetMOTD(const char *data) {
+	int MOTDLength = strlen(data);
+	char *MOTD = new char[MOTDLength + 1];
+	strcpy_s(MOTD,MOTDLength + 1,data);
+	interfaceData->MOTD = MOTD;
+}
+
 void MessageProcessor::TCPThread(Network::Won::InterfaceData *data) {
 	try {
 		MessageProcessor processor(data);

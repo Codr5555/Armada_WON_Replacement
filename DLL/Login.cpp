@@ -4,17 +4,26 @@
 using namespace Network::Won;
 
 void MessageProcessor::Login(const char *data,int messageLength) {
-	bool successful = *data;
-
-	if (!successful) {
-		//Send failed message instead of this later.
-		throw std::exception("Another player is already logged in with this name.");
+	if (messageLength < 1) {
+		throw std::exception("Unexpected data.");
 	}
 
-	int MOTDLength = strlen(data + 1);
-	char *MOTD = new char[MOTDLength + 1];
-	strcpy_s(MOTD,MOTDLength + 1,data + 1);
-	interfaceData->MOTD = MOTD;
+	int result = *data;
+
+	if (result == 0) {
+		interfaceData->events.push(new EventFailure(EventFailure::Code::General));
+		throw std::exception("Another player is already logged in with this name.");
+	}
+	if (result == 2) {
+		interfaceData->events.push(new EventFailure(EventFailure::Code::AccountDoesNotExist));
+		return;
+	}
+	if (result == 3) {
+		interfaceData->events.push(new EventFailure(EventFailure::Code::InvalidPassword));
+		return;
+	}
+
+	SetMOTD(data + 1);
 
 	interfaceData->events.push(new Event(Event::Code::Login));
 }

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Concurrent;
+using Microsoft.Data.Sqlite;
 using Serilog;
 
 namespace ArmadaServer {
@@ -9,6 +10,7 @@ namespace ArmadaServer {
 
 		internal static Lock playersRoomLock = new();
 		internal static bool useUDP = false;
+		internal static SqliteConnection Database { get; private set; } = new SqliteConnection("Data Source=Database");
 
 		internal static async Task Main(string[] arguments) {
 			var loggingPath = Path.Combine(Directory.GetCurrentDirectory(),"Logs");
@@ -20,6 +22,14 @@ namespace ArmadaServer {
 				.CreateLogger();
 
 			Rooms.TryAdd("Lobby",new Room("Lobby"));
+
+			try {
+				OpenDatabase();
+			}
+			catch (Exception exception) {
+				Log.Error(exception,"Attempting to establish a database connection failed.  Ensure the working directory has write access and available space.");
+				return;
+			}
 
 			try {
 				var handler = new SocketHandler(arguments[0]);
@@ -42,6 +52,24 @@ namespace ArmadaServer {
 			}
 
 			await Task.Delay(Timeout.Infinite);
+		}
+
+		internal static string GetMOTD() {
+			string MOTD = "";
+			try {
+				return File.ReadAllText("MOTD.txt");
+			}
+			catch {
+			}
+			return MOTD;
+		}
+
+		private static void OpenDatabase() {
+			Database.Open();
+
+			using var command = Database.CreateCommand();
+			command.CommandText = "create table if not exists Accounts (Name text not null,Password text not null,[Last Login] integer not null)";
+			command.ExecuteNonQuery();
 		}
 	}
 }

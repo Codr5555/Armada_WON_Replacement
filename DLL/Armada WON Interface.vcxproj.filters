@@ -51,6 +51,9 @@
     <ClInclude Include="InterfaceData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SHA256.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -124,6 +127,15 @@
     </ClCompile>
     <ClCompile Include="InterfaceData.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SHA256.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CreateAccount.cpp">
+      <Filter>Source Files\MessageHandlers</Filter>
+    </ClCompile>
+    <ClCompile Include="ChangePassword.cpp">
+      <Filter>Source Files\MessageHandlers</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

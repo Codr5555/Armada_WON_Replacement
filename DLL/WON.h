@@ -125,9 +125,12 @@ namespace Network {
 		public:
 			enum Code {
 				General = 0,
-				UnknownUser = 4,
-				BadPassword = 5,
+				AccountDoesNotExist = 4,
+				InvalidPassword = 5,
+				AccountExists = 18,
 				UnableToLogIn = 18, //Applies to other message IDs as well, but this works.
+				InvalidAccount = 28,
+				InvalidNewPassword = 29,
 			};
 
 		private:
