@@ -68,7 +68,7 @@
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <AdditionalDependencies>Synchronization.lib;ws2_32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>BCrypt.lib;Synchronization.lib;ws2_32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
@@ -108,17 +108,21 @@ copy /y "$(OutDir)$(TargetName)$(TargetExt)" \\I76820HK\D\Desktop\Armada\WONInte
     <ClInclude Include="Patch.h" />
     <ClInclude Include="PCH.h" />
     <ClInclude Include="ServerCommunicator.h" />
+    <ClInclude Include="SHA256.h" />
     <ClInclude Include="VC6List.h" />
     <ClInclude Include="VC6String.h" />
     <ClInclude Include="WON.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ChangePassword.cpp" />
     <ClCompile Include="Chat.cpp" />
     <ClCompile Include="Connect.cpp" />
+    <ClCompile Include="CreateAccount.cpp" />
     <ClCompile Include="InterfaceData.cpp" />
     <ClCompile Include="ParsePlayerData.cpp" />
     <ClCompile Include="Patch.cpp" />
     <ClCompile Include="RemovePlayers.cpp" />
+    <ClCompile Include="SHA256.cpp" />
     <ClCompile Include="UpdatePing.cpp" />
     <ClCompile Include="WON.cpp" />
     <ClInclude Include="GameSummaryData.h" />

@@ -22,6 +22,8 @@ namespace ArmadaServer {
 			UpdatePing,
 			RemovePlayers,
 			Data,
+			CreateAccount,
+			ChangePassword,
 		};
 
 		private delegate void TCPMessageHandler(Span<byte> data);
@@ -80,6 +82,8 @@ namespace ArmadaServer {
 				GameSummaryUpdate,
 				TCPData,
 				TCPDataTargetted,
+				CreateAccount,
+				ChangePassword,
 			];
 
 			UDPHandlers = [

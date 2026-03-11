@@ -3,6 +3,7 @@
 #include "ServerCommunicator.h"
 #include "Logger.h"
 #include "InterfaceData.h"
+#include "SHA256.h"
 
 namespace Network {
 	namespace Won {
@@ -71,15 +72,45 @@ namespace Network {
 		}
 
 		void Interface::AccountChangePassword(const char *newPassword) {
+			if (strlen(newPassword) < 6) {
+				data->events.push(new EventFailure(EventFailure::Code::InvalidNewPassword));
+				return;
+			}
+
+			auto encrypter = new SHA256();
+			std::array<unsigned char,32> hash{};
+			encrypter->CalculateHash(newPassword,hash);
+
+			data->communicator.ChangePassword(hash);
 		}
 
-		void Interface::AccountCreate(const char *,const char *,const char *) {
+		void Interface::AccountCreate(const char *accountName,const char *password,const char *unused) {
+			int accountLength = strlen(accountName);
+			if (accountLength < 1 || accountLength > 20) {
+				data->events.push(new EventFailure(EventFailure::Code::InvalidAccount));
+				return;
+			}
+			if (strlen(password) < 6) {
+				data->events.push(new EventFailure(EventFailure::Code::InvalidNewPassword));
+				return;
+			}
+
+			auto encrypter = new SHA256();
+			std::array<unsigned char,32> hash{};
+			encrypter->CalculateHash(password,hash);
+
+			data->SetPlayerName(accountName);
+			data->communicator.CreateAccount(accountName,hash);
 		}
 
 		void Interface::AccountLogon(const char *accountName,const char *password) {
 			try {
+				auto encrypter = new SHA256();
+				std::array<unsigned char,32> hash{};
+				encrypter->CalculateHash(password,hash);
+
 				data->SetActionTime();
-				data->communicator.Login(accountName,password);
+				data->communicator.Login(accountName,hash);
 			}
 			catch (std::exception exception) {
 				Logger::Log(std::format("An exception occurred when trying to log in: {}",exception.what()).c_str());

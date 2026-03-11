@@ -12,7 +12,7 @@ class MessageProcessor {
 
 #define HandlerDefinition(name) Handler{&MessageProcessor::name,#name}
 	//The order of this list must match the message ID in the server code.
-	const std::array<Handler,15> MessageHandlers = {
+	const std::array<Handler,17> MessageHandlers = {
 		HandlerDefinition(Connect),
 		HandlerDefinition(Login),
 		HandlerDefinition(JoinRoom),
@@ -28,6 +28,8 @@ class MessageProcessor {
 		HandlerDefinition(UpdatePing),
 		HandlerDefinition(RemovePlayers),
 		HandlerDefinition(Data),
+		HandlerDefinition(CreateAccount),
+		HandlerDefinition(ChangePassword),
 	};
 #undef HandlerDefinition
 
@@ -38,9 +40,12 @@ class MessageProcessor {
 	bool HandleInvalidResult(SOCKET &socket,int result,bool forRecv);
 	Network::Won::Player ParsePlayerData(const char *&data);
 	void ProcessUpdatedPlayerData(const char *data);
+	void SetMOTD(const char *data);
 
 	//Message handlers.
 	void Connect(const char *data,int messageLength);
+	void CreateAccount(const char *data,int length);
+	void ChangePassword(const char *data,int length);
 	void Login(const char *data,int messageLength);
 	void JoinRoom(const char *data,int messageLength);
 	void GetGameList(const char *data,int messageLength);

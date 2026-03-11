@@ -67,15 +67,29 @@ void ServerCommunicator::Connect() {
 	send(TCPSocket,buffer,65,0);
 }
 
-void ServerCommunicator::Login(const char *accountName,const char *password) const {
+void ServerCommunicator::CreateAccount(const char *accountName,std::array<unsigned char,32> &passwordHash) const {
+	int accountLength = strlen(accountName);
+	int totalLength = 4 + accountLength + 32;
+	auto buffer = std::make_unique<char[]>(totalLength);
+	*std::bit_cast<int*>(buffer.get()) = accountLength;
+	memcpy_s(buffer.get() + 4,accountLength,accountName,accountLength);
+	memcpy_s(buffer.get() + 4 + accountLength,32,passwordHash.data(),32);
+	TCPSend(TCPMessageID::CreateAccount,std::span(buffer.get(),totalLength));
+}
+
+void ServerCommunicator::ChangePassword(std::array<unsigned char,32> &passwordHash) const {
+	auto buffer = std::make_unique<char[]>(32);
+	memcpy_s(buffer.get(),32,passwordHash.data(),32);
+	TCPSend(TCPMessageID::ChangePassword,std::span(buffer.get(),32));
+}
+
+void ServerCommunicator::Login(const char *accountName,std::array<unsigned char,32> &passwordHash) const {
 	int length = strlen(accountName);
-	int passwordLength = strlen(password);
-	int totalLength = 4 + length + 4 + passwordLength;
+	int totalLength = 4 + length + 32;
 	auto buffer = std::make_unique<char[]>(totalLength);
 	*std::bit_cast<int*>(buffer.get()) = length;
 	memcpy_s(buffer.get() + 4,length,accountName,length);
-	*std::bit_cast<int*>(buffer.get() + 4 + length) = passwordLength;
-	memcpy_s(buffer.get() + 4 + length + 4,passwordLength,password,passwordLength);
+	memcpy_s(buffer.get() + 4 + length,32,passwordHash.data(),32);
 	TCPSend(TCPMessageID::Login,std::span(buffer.get(),totalLength));
 }
 

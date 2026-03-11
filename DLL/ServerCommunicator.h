@@ -42,6 +42,8 @@ class ServerCommunicator {
 		GameSummaryUpdate,
 		Data,
 		DataTargetted,
+		CreateAccount,
+		ChangePassword,
 
 		//Special case that's obviously excluded from ordering.
 		PingResponse = 255,
@@ -73,12 +75,13 @@ public:
 	~ServerCommunicator();
 
 	void Connect();
-	void Login(const char *accountName,const char *password) const;
+	void CreateAccount(const char *accountName,std::array<unsigned char,32> &passwordHash) const;
+	void ChangePassword(std::array<unsigned char,32> &passwordHash) const;
+	void Login(const char *accountName,std::array<unsigned char,32> &passwordHash) const;
 	void GetGameList() const;
 	void JoinRoom(const char *name,const char *password) const;
 	void CreateRoom(const char *name,const char *password) const;
 	void GetRooms() const;
-	void GetPlayers() const;
 	void PingResponse() const;
 	void Chat(const char *text) const;
 	void PrivateChat(const char *text,int recipientIPAddress) const;
