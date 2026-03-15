@@ -1,5 +1,8 @@
 #pragma once
 
+#include <ntstatus.h>
+#define WIN32_NO_STATUS
+
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <Windows.h>

@@ -1,6 +1,5 @@
 #include <array>
 #include <exception>
-#include <ntstatus.h>
 #include "SHA256.h"
 #include "Logger.h"
 
@@ -14,11 +13,11 @@ SHA256::SHA256() {
 SHA256::~SHA256() {
 	auto result = BCryptDestroyHash(hashHandle);
 	if (result != STATUS_SUCCESS) {
-		Logger::Log(std::format("Destroying a BCrypt hash failed.  Result: {}",result));
+		Logger::Log(std::format("Destroying a BCrypt hash failed.  Result: {}",result).c_str());
 	}
 	result = BCryptCloseAlgorithmProvider(algorithmHandle,0);
 	if (result != STATUS_SUCCESS) {
-		Logger::Log(std::format("Closing the BCrypt provider failed.  Result: {}",result));
+		Logger::Log(std::format("Closing the BCrypt provider failed.  Result: {}",result).c_str());
 	}
 }
 
