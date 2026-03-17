@@ -8,5 +8,5 @@ public:
 	SHA256();
 	~SHA256();
 
-	void CalculateHash(const char *input,std::array<unsigned char,32> &output);
+	void CalculateHash(const char *input,int inputLength,std::array<unsigned char,32> &output);
 };

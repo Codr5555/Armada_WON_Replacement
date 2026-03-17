@@ -17,17 +17,12 @@ namespace ArmadaServer {
 
 			var passwordHash = data.Slice(4 + accountLength,32);
 
-			var command = Server.Database.CreateCommand();
-			command.CommandText = "select 1 from Accounts where Name = @name";
-			command.Parameters.AddWithValue("@name",account);
-			if (command.ExecuteScalar() == null) {
+			if (!Server.Database.AccountExists(account)) {
 				QueueBooleanMessage(OutgoingTCPMessageID.Login,2);
 				return;
 			}
 
-			command.CommandText = "select 1 from Accounts where Name = @name and Password = @password";
-			command.Parameters.AddWithValue("@password",Convert.ToBase64String(passwordHash));
-			if (command.ExecuteScalar() == null) {
+			if (!Server.Database.Login(account,passwordHash)) {
 				QueueBooleanMessage(OutgoingTCPMessageID.Login,3);
 				return;
 			}
@@ -37,11 +32,7 @@ namespace ArmadaServer {
 				return;
 			}
 
-			command.CommandText = "update Accounts set [Last Login] = @lastLogin where Name = @name";
-			command.Parameters.Clear();
-			command.Parameters.AddWithValue("@name",account);
-			command.Parameters.AddWithValue("@lastLogin",DateTime.UtcNow);
-			command.ExecuteNonQuery();
+			Server.Database.UpdateLastLogin(account);
 
 			Player.Account = account;
 

@@ -15,12 +15,8 @@ namespace ArmadaServer {
 				return;
 			}
 
-			var command = Server.Database.CreateCommand();
-			command.CommandText = "update Accounts set Password = @password where Name = @name";
-			command.Parameters.AddWithValue("@name",Player.Account);
-			command.Parameters.AddWithValue("@password",Convert.ToBase64String(data));
 			try {
-				command.ExecuteNonQuery();
+				Server.Database.ChangePassword(Player.Account,data);
 			}
 			catch (Exception exception) {
 				Log.Error(exception,$"A password change failed.  Name: {Player.Account}");

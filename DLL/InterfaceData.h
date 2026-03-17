@@ -64,6 +64,9 @@ public:
 	void SetPlayerName(const char *name) {
 		strcpy_s(playerName.data(),playerName.size(),name);
 	}
+	const char *GetPlayerName() const {
+		return playerName.data();
+	}
 	const char *GetPlayerName(int IPAddress);
 
 	void SetActionTime() {

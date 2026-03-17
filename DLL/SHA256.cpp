@@ -21,13 +21,13 @@ SHA256::~SHA256() {
 	}
 }
 
-void SHA256::CalculateHash(const char *input,std::array<unsigned char,32> &output) {
+void SHA256::CalculateHash(const char *input,int inputLength,std::array<unsigned char,32> &output) {
 	auto result = BCryptCreateHash(algorithmHandle,&hashHandle,0,0,0,0,0);
 	if (result != STATUS_SUCCESS) {
 		throw std::exception("BCrypt hash creation failed.");
 	}
 
-	result = BCryptHashData(hashHandle,(unsigned char *)input,strlen(input),0);
+	result = BCryptHashData(hashHandle,std::bit_cast<unsigned char*>(input),inputLength,0);
 	if (result != STATUS_SUCCESS) {
 		throw std::exception("BCrypt hash data generation failed.");
 	}

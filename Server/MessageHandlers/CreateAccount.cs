@@ -10,26 +10,17 @@ namespace ArmadaServer {
 			}
 
 			var account = Encoding.Latin1.GetString(data.Slice(4,accountLength));
-
-			var hash = data.Slice(4 + accountLength,32);
-
 			if (accountLength > 20) {
 				account = account[..20];
 			}
 
-			var command = Server.Database.CreateCommand();
-			command.CommandText = "select 1 from Accounts where Name = @name";
-			command.Parameters.AddWithValue("@name",account);
-			if (command.ExecuteScalar() != null) {
+			if (Server.Database.AccountExists(account)) {
 				QueueMessage(OutgoingTCPMessageID.CreateAccount,[3]);
 				return;
 			}
 
-			command.CommandText = "insert into Accounts values (@name,@hash,@lastLogin)";
-			command.Parameters.AddWithValue("@hash",Convert.ToBase64String(hash));
-			command.Parameters.AddWithValue("@lastLogin",DateTime.UtcNow);
 			try {
-				command.ExecuteNonQuery();
+				Server.Database.CreateAccount(account,data.Slice(4 + accountLength,32));
 			}
 			catch (Exception exception) {
 				Log.Error(exception,$"Account creation failed.  Name: {account}");

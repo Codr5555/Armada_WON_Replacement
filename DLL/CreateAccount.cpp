@@ -25,7 +25,5 @@ void MessageProcessor::CreateAccount(const char *data,int length) {
 
 	SetMOTD(data + 1);
 
-	interfaceData->SetPlayerName("test");
-
 	interfaceData->events.push(new Event(Event::Code::OK));
 }

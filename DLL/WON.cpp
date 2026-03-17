@@ -5,6 +5,8 @@
 #include "InterfaceData.h"
 #include "SHA256.h"
 
+static void HashPassword(const char *account,const char *password,std::array<unsigned char,32> &output);
+
 namespace Network {
 	namespace Won {
 		std::string GetByteStrings(const void *data,int length) {
@@ -77,9 +79,8 @@ namespace Network {
 				return;
 			}
 
-			auto encrypter = new SHA256();
 			std::array<unsigned char,32> hash{};
-			encrypter->CalculateHash(newPassword,hash);
+			HashPassword(data->GetPlayerName(),newPassword,hash);
 
 			data->communicator.ChangePassword(hash);
 		}
@@ -90,14 +91,14 @@ namespace Network {
 				data->events.push(new EventFailure(EventFailure::Code::InvalidAccount));
 				return;
 			}
+
 			if (strlen(password) < 6) {
 				data->events.push(new EventFailure(EventFailure::Code::InvalidNewPassword));
 				return;
 			}
 
-			auto encrypter = new SHA256();
 			std::array<unsigned char,32> hash{};
-			encrypter->CalculateHash(password,hash);
+			HashPassword(accountName,password,hash);
 
 			data->SetPlayerName(accountName);
 			data->communicator.CreateAccount(accountName,hash);
@@ -105,9 +106,8 @@ namespace Network {
 
 		void Interface::AccountLogon(const char *accountName,const char *password) {
 			try {
-				auto encrypter = new SHA256();
 				std::array<unsigned char,32> hash{};
-				encrypter->CalculateHash(password,hash);
+				HashPassword(accountName,password,hash);
 
 				data->SetActionTime();
 				data->communicator.Login(accountName,hash);
@@ -311,4 +311,32 @@ namespace Network {
 			return listVariable;
 		}
 	}
+}
+
+static void HashPassword(const char *account,const char *password,std::array<unsigned char,32> &output) {
+	int accountLength = strlen(account);
+	int passwordLength = strlen(password);
+	int fullPasswordLength = passwordLength + accountLength + 10;
+	auto saltedPassword = std::make_unique<char[]>(fullPasswordLength);
+
+	srand(74656);
+	char *position = saltedPassword.get();
+	for (int index = 0;index < 5;index++) {
+		*position++ = rand() % 256;
+	}
+
+	for (int index = 0;index < passwordLength;index++) {
+		*position++ = password[index] ^ 0x47;
+	}
+
+	for (int index = 0;index < accountLength;index++) {
+		*position++ = account[index] ^ 0x47;
+	}
+
+	for (int index = 0;index < 5;index++) {
+		*position++ = rand() % 256;
+	}
+
+	auto encrypter = new SHA256();
+	encrypter->CalculateHash(saltedPassword.get(),fullPasswordLength,output);
 }
