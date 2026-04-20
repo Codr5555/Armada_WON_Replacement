@@ -11,3 +11,15 @@ void Patch(int address,std::initializer_list<unsigned char> bytes) {
 
 	VirtualProtect(std::bit_cast<void*>(address),bytes.size(),oldProtect,&oldProtect);
 }
+
+void Patch(int address,unsigned char value,int count) {
+	unsigned long oldProtect;
+	VirtualProtect(std::bit_cast<void*>(address),count,PAGE_EXECUTE_READWRITE,&oldProtect);
+
+	auto base = std::bit_cast<unsigned char *>(address);
+	for (unsigned int index = 0;index < count;index++) {
+		base[index] = value;
+	}
+
+	VirtualProtect(std::bit_cast<void*>(address),count,oldProtect,&oldProtect);
+}
