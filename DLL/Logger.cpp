@@ -9,6 +9,5 @@ void Logger::Log(const char *string) {
 
 	std::ofstream stream("Logs\\WONInterface.txt",std::ios_base::app);
 
-	const auto time = std::chrono::system_clock::now();
-	stream << std::chrono::current_zone()->to_local(time) << ": " << string << "\n";
+	stream << std::chrono::system_clock::now() << ": " << string << "\n";
 }
